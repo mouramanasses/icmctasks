@@ -1,0 +1,78 @@
+/* plano de fundo gradiente e centralização */
+.login-page {
+  background: linear-gradient(to right, #00c9a7, #007cf0);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* o card branco de login */
+.login-card {
+  background: #fff;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 340px;
+  text-align: center;
+}
+
+/* logo no topo do card */
+.login-logo {
+  width: 140px;
+  margin-bottom: 1rem;
+}
+
+/* inputs de e-mail e senha */
+.login-card form input {
+  width: 90%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* linha com checkbox e link */
+.login-card .options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.login-card .options label {
+  font-size: 0.9rem;
+}
+
+.login-card .options label input {
+  margin-right: 0.5rem;
+}
+
+.login-card .forgot-link {
+  font-size: 0.9rem;
+  color: #007cf0;
+  text-decoration: none;
+}
+
+.login-card .forgot-link:hover {
+  text-decoration: underline;
+}
+
+/* botão de login */
+.login-card .btn.login {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  background: linear-gradient(to right, #3f51b5, #00bcd4);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.login-card .btn.login:hover {
+  transform: scale(1.05);
+}

@@ -1,0 +1,65 @@
+/* (1) Faz a página inteira ficar com um gradiente colorido e
+       centraliza o conteúdo vertical e horizontalmente. */
+.register-page {
+  background: linear-gradient(to right, #00c9a7, #007cf0);
+  height: 100vh;              /* ocupa 100% da altura da janela */
+  display: flex;              /* ativa flexbox */
+  justify-content: center;    /* centraliza horizontalmente */
+  align-items: center;        /* centraliza verticalmente */
+}
+
+/* (2) Estiliza o card branco que envolve o formulário */
+.register-card {
+  background: #fff;                       /* branco */
+  padding: 2.5rem;                        /* espaço interno */
+  border-radius: 1rem;                    /* cantos arredondados */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .15); /* sombra para "levantá-lo" */
+  width: 340px;                           /* largura fixa */
+  text-align: center;                     /* centraliza texto/itens */
+}
+
+/* (3) Define o tamanho e margem da logo dentro do card */
+.register-logo {
+  width: 140px;
+  margin-bottom: 1rem;
+}
+
+/* (5) Estilo base de todos os inputs dentro do form */
+.register-card form input {
+  width: 90%;                /* ocupa toda a largura disponível */
+  padding: 0.75rem 1rem;      /* altura e espaçamento horizontal */
+  margin-bottom: 1rem;        /* espaço entre campos */
+  border: 1px solid #ccc;     /* borda clara */
+  border-radius: 0.5rem;      /* cantos levemente arredondados */
+  font-size: 0.95rem;         /* tamanho de fonte legível */
+}
+
+/* (6) Container para agrupar dois inputs lado a lado */
+.register-card .row {
+  display: flex;  /* flexbox para alinhar horizontalmente */
+  gap: 0.5rem;    /* espaço entre os inputs */
+}
+
+/* (7) Cada input dentro de .row ocupa igualmente o espaço */
+.register-card .row input {
+  flex: 1;
+}
+
+/* (8) Botão de envio estilizado com gradiente e animação */
+.register-card .btn {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  background: linear-gradient(to right, #00c9a7, #007cf0);
+  cursor: pointer;               /* muda cursor pra “mãozinha” */
+  transition: transform 0.2s ease; /* animação suave */
+}
+
+/* (9) Efeito de “zoom” quando o mouse passa por cima do botão */
+.register-card .btn:hover {
+  transform: scale(1.05);
+}
