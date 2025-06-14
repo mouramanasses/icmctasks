@@ -15,12 +15,12 @@ const Header = ({ userProfilePhoto, userName }) => {
   };
 
   const handleProfileClick = () => {
-    navigate('/profile'); // Ação ao clicar na área combinada
+    navigate('/perfil'); // Ação ao clicar na área combinada
   };
 
   return (
     <header className="header-container">
-      <div className="logo-container" onClick={() => navigate('/Profile')}>
+      <div className="logo-container" onClick={() => navigate('/Perfil')}>
         <img src={logo} alt="Logo ICMC Tasks" className="logo" />
       </div>
 
