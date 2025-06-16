@@ -11,18 +11,20 @@ import AddTask from './AddTask';
 import Tasks from './Tasks';
 
 function App() {
+  console.log('App component loaded - routes configured');
+  
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<AddTask />} />
+        <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path= "/forgot" element ={<Forgot/>} />
+        <Route path="/forgot" element={<Forgot />} />
         <Route path="/newpassword" element={<NewPassword />} />
         <Route path="/perfil" element={<Perfil />} />
-        <Route path="/inicio" element={<Inicio/>}/>
-        <Route path="/tasks" element={<Tasks/>}/>
-        <Route path="/addtask" element={<AddTask/>}/>
+        <Route path="/inicio" element={<Inicio />} />
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/addtask" element={<AddTask />} />
       </Routes>
     </BrowserRouter>
   );

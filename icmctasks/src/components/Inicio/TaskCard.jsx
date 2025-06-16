@@ -1,9 +1,9 @@
 import React from 'react';
 import './TaskCard.css';
 
-const TaskCard = ({ titulo, descricao, prazo, status }) => {
+const TaskCard = ({ titulo, descricao, prazo, status, onClick }) => {
   return (
-    <div className="task-card-borda">
+    <div className="task-card-borda" onClick={onClick}>
       <div className="task-card">
         <h2 className="task-card-titulo">{titulo}</h2>
         <p className="task-card-descricao">{descricao}</p>

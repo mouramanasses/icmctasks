@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Inicio.css';
-import Header from './components/Header/Header'
+import Header from './components/Header/Header.jsx';
 import Pesquisa from './components/Inicio/Pesquisa';
 import TaskCard from './components/Inicio/TaskCard';
 import AddTaskButton from './components/Inicio/AddTaskButton';
 
 const Inicio = () => {
+  const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
 
   // Dados de exemplo das tarefas
@@ -44,7 +45,24 @@ const Inicio = () => {
   };
 
   const handleAddTask = () => {
-    console.log('Adicionar nova tarefa');
+    console.log('Navegando para adicionar nova tarefa');
+    try {
+      navigate('/addtask');
+      console.log('Navegação executada com sucesso');
+    } catch (error) {
+      console.error('Erro na navegação:', error);
+    }
+  };
+
+  const handleTaskClick = (taskId) => {
+    console.log('Task clicada:', taskId);
+    const selectedTask = tasks.find(task => task.id === taskId);
+    
+    navigate('/tasks', { 
+      state: { 
+        task: selectedTask 
+      } 
+    });
   };
 
   return (
@@ -66,6 +84,7 @@ const Inicio = () => {
               descricao={task.descricao}
               prazo={task.prazo}
               status={task.status}
+              onClick={() => handleTaskClick(task.id)}
             />
           ))}
         </div>
@@ -77,7 +96,7 @@ const Inicio = () => {
         )}
       </main>
 
-      <AddTaskButton onClick={handleAddTask} />
+      <AddTaskButton aoClicar={handleAddTask} />
     </div>
   );
 };

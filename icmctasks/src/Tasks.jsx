@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from './components/Header/Header.jsx';
 import backIcon from './images/seta-voltar.png';
 import deleteTask from './images/botao-deletar-tarefa.png';
@@ -8,10 +8,40 @@ import './Tasks.css';
 
 const Tasks = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const task = location.state?.task;
+  
+  const defaultTask = {
+    id: 0,
+    titulo: 'Tarefa não encontrada',
+    descricao: 'Não foi possível carregar os dados da tarefa.',
+    prazo: '--/--/-- --:--',
+    status: 'Desconhecido'
+  };
+  
+  const currentTask = task || defaultTask;
+
+  const handleEdit = () => {
+    navigate('/addtask', { 
+      state: { 
+        task: currentTask,
+        isEditing: true 
+      } 
+    });
+  };
+
+  const handleDelete = () => {
+    const confirmDelete = window.confirm('Tem certeza que deseja deletar esta tarefa?');
+    
+    if (confirmDelete) {
+      navigate('/inicio');
+    }
+  };
 
   return (
     <div className="tasks-page">
-      {/* Header com props personalizadas (ajuste conforme seu componente) */}
+      {/* Header com props personalizadas */}
       <Header 
         userName="Rafael Carmanhani"
       />
@@ -29,22 +59,22 @@ const Tasks = () => {
             </button>
 
             {/* Título Centralizado */}
-              <h1 className="task-title">Título da Tarefa</h1>
+              <h1 className="task-title">{currentTask.titulo}</h1>
           
             {/* Descrição da Tarefa */}
               <div className="task-description">
-                <p>descrição - Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an </p>
+                <p>{currentTask.descricao}</p>
               </div>
             
             {/* Novo rodapé */}
               <div className="task-footer">
                 <div className="task-deadline">
                   <span>⏰</span>
-                  <span>15/06/2023 - 14:00</span>
+                  <span>{currentTask.prazo}</span>
                 </div>
                 <div className="task-status">
                   <span>STATUS: </span>
-                    Em Progresso
+                  {currentTask.status}
                 </div>
               </div>
         </div>
@@ -52,8 +82,7 @@ const Tasks = () => {
       {/* Botão Editar Tarefa */}
       <button 
         className="task-edit-button"
-        onClick={() => navigate('/addtask')}
-        isEditing = {true}
+        onClick={handleEdit}
         aria-label="Editar Tarefa"
       >
         <img src={editTask} alt="Editar" />
@@ -62,7 +91,7 @@ const Tasks = () => {
       {/* Botão Deletar Tarefa */}
       <button 
         className="task-delete-button"
-        onClick={() => navigate('/inicio')}
+        onClick={handleDelete}
         aria-label="Deletar Tarefa"
       >
         <img src={deleteTask} alt="deletar" />
