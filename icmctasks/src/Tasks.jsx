@@ -22,7 +22,7 @@ const Tasks = () => {
             {/* Botão Voltar */}
             <button 
               className="task-back-button"
-              onClick={() => navigate('/pagina_principal')} // Navega para a página principal
+              onClick={() => navigate('/inicio')} // Navega para a página principal
               aria-label="Voltar para página principal"
             >
               <img src={backIcon} alt="Voltar" />
@@ -52,7 +52,8 @@ const Tasks = () => {
       {/* Botão Editar Tarefa */}
       <button 
         className="task-edit-button"
-        onClick={() => navigate('/add_tarefa')}
+        onClick={() => navigate('/addtask')}
+        isEditing = {true}
         aria-label="Editar Tarefa"
       >
         <img src={editTask} alt="Editar" />
@@ -61,7 +62,7 @@ const Tasks = () => {
       {/* Botão Deletar Tarefa */}
       <button 
         className="task-delete-button"
-        onClick={() => navigate('/pagina_principal')}
+        onClick={() => navigate('/inicio')}
         aria-label="Deletar Tarefa"
       >
         <img src={deleteTask} alt="deletar" />
