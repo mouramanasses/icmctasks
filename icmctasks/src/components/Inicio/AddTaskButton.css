@@ -1,0 +1,27 @@
+
+.botao-flutuante {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+
+  width: 60px;
+  height: 60px;
+
+  border-radius: 50%;
+  background: linear-gradient(to right, #3b82f6, #06b6d4);
+  border: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /*Coloca o botão acima de tudo*/
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.icone {
+  width: 30px;
+  height: 30px;
+  color: white;
+}

@@ -11,7 +11,7 @@ const Header = ({ userProfilePhoto, userName }) => {
 
   const handleLogout = () => {
     // Lógica de logout
-    navigate('/home');
+    navigate('/');
   };
 
   const handleProfileClick = () => {
@@ -20,7 +20,7 @@ const Header = ({ userProfilePhoto, userName }) => {
 
   return (
     <header className="header-container">
-      <div className="logo-container" onClick={() => navigate('/Perfil')}>
+      <div className="logo-container" onClick={() => navigate('/inicio')}>
         <img src={logo} alt="Logo ICMC Tasks" className="logo" />
       </div>
 

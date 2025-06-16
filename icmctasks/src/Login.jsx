@@ -24,7 +24,7 @@ export default function Login() {
     // TODO: aqui você chamaria sua API de autenticação
     console.log('Dados de login:', form);
     // após login bem-sucedido, redirecione para a Home ou Dashboard
-    navigate('/tasks');
+    navigate('/inicio');
   };
 
   return (

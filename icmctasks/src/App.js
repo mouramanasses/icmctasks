@@ -5,6 +5,7 @@ import Register from './Register';
 import Login from './Login';
 import Forgot from './Forgot';
 import Perfil from './Perfil';
+import Inicio from './Inicio';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path= "/forgot" element ={<Forgot/>} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/inicio" element={<Inicio/>}/>
       </Routes>
     </BrowserRouter>
   );
