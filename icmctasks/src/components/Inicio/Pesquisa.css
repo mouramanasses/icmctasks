@@ -1,0 +1,44 @@
+
+.pesquisa-container {
+  position: relative;
+  margin-bottom: 2rem; 
+}
+
+.pesquisa {
+  display: flex;
+  align-items: center;
+  background-color: #e5e7eb; 
+  border-radius: 0.5rem; 
+}
+
+.pesquisa-input-area {
+  flex: 1;
+  position: relative;
+}
+
+
+.pesquisa-input {
+  width: 100%;
+  padding-left: 3rem; 
+  padding-right: 1rem;
+  padding-top: 0.75rem; 
+  padding-bottom: 0.75rem;
+  background-color: transparent;
+  color: #374151;
+  border: none; 
+  outline: none;
+}
+
+.filtro-botao {
+  padding: 0.75rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+
+.filtro-icon {
+  width: 1.25rem; 
+  height: 1.25rem; 
+  color: #4b5563;
+}

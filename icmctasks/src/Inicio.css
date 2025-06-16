@@ -1,0 +1,39 @@
+
+.inicio-container {
+  min-height: 100dvh;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column; 
+}
+
+.inicio-main {
+  max-width: 1024px; 
+  width: 90%; 
+  margin-left: auto; 
+  margin-right: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 30px;
+  padding-bottom: 30px;
+  flex-grow: 1;
+}
+
+.task-cards-list {
+  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.no-tasks-message p {
+  color: #6b7280; 
+  font-size: 18px;
+}
+
+@media (max-width: 768px) { 
+  .inicio-main {
+    padding-left: 15px;
+    padding-right: 15px;
+    width: 95%;
+  }
+}
