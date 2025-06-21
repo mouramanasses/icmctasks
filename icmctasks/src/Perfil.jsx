@@ -1,24 +1,42 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './Perfil.css';
 import Header from './components/Header/Header';
 
 const Perfil = () => {
-  const navigate = useNavigate(); // Para conseguir navegar e voltar a home quando deleta conta
-
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
-// aqui vai pegar do banco de dados depois
+
   const [userData, setUserData] = useState({
-    nome: "Nome do Usuário",
-    email: "emaildousuario@email.com",
-    dataNascimento: "01/01/2000",
-    cpf: "999.999.999-33"
+    nome: '',
+    email: '',
+    dataNascimento: '',
+    cpf: ''
   });
 
   const [tempData, setTempData] = useState({ ...userData });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        console.warn('Nenhum userId encontrado no localStorage');
+        return;
+      }
+
+      try {
+        const response = await axios.get(`http://localhost:3000/api/users/${userId}`);
+        setUserData(response.data);
+        setTempData(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar dados do usuário:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleInputChange = (field, value) => {
     setTempData(prev => ({
@@ -27,52 +45,64 @@ const Perfil = () => {
     }));
   };
 
-  // Função para alternar modo de edição
-  const handleEditToggle = () => {
+  const handleEditToggle = async () => {
     if (isEditing) {
-      setUserData({ ...tempData });
-      setIsEditing(false);
+      try {
+        const userId = localStorage.getItem('userId');
+        const response = await axios.put(`http://localhost:3000/api/users/${userId}`, {
+          nome: tempData.nome,
+          email: tempData.email,
+          dataNascimento: tempData.dataNascimento
+        });
+
+        setUserData(response.data);
+        setIsEditing(false);
+        alert('Dados atualizados com sucesso!');
+      } catch (error) {
+        console.error('Erro ao atualizar dados:', error);
+        alert('Erro ao atualizar dados. Tente novamente.');
+      }
     } else {
-      // Se não estava editando, entra no modo de edição
       setTempData({ ...userData });
       setIsEditing(true);
     }
   };
 
-  // Função para cancelar edição
   const handleCancel = () => {
-    setTempData({ ...userData }); // Usa os dados originais
+    setTempData({ ...userData });
     setIsEditing(false);
   };
 
-  // Função para abrir de confirmação de exclusão
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
   };
 
-  // Função para confirmar exclusão da conta
-  const handleConfirmDelete = () => {
-    console.log("Conta excluída!");
-    alert("Conta excluída com sucesso!");
-    setShowDeleteModal(false);
-    
-    // Redireciona para página de login
-    navigate('/');
+  const handleConfirmDelete = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      await axios.delete(`http://localhost:3000/api/users/${userId}`);
+      alert('Conta excluída com sucesso!');
+      localStorage.clear();
+      navigate('/');
+    } catch (error) {
+      console.error('Erro ao excluir conta:', error);
+      alert('Erro ao excluir conta');
+    } finally {
+      setShowDeleteModal(false);
+    }
   };
 
-  // Função para cancelar exclusão
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
   };
 
   return (
     <div className="perfil-container">
-      {/*cabeçalho*/}
-      <Header 
+      <Header
         userProfilePhoto="https://cdn-icons-png.flaticon.com/512/194/194938.png"
         userName={userData.nome}
       />
-             
+
       <div className="perfil-content">
         <div className="perfil-card">
           <div className="perfil-header">
@@ -86,49 +116,49 @@ const Perfil = () => {
               <p>{userData.email}</p>
             </div>
           </div>
-                     
+
           <div className="perfil-form">
             <label>Nome:</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={isEditing ? tempData.nome : userData.nome}
               onChange={(e) => handleInputChange('nome', e.target.value)}
               readOnly={!isEditing}
               className={isEditing ? 'editing' : ''}
             />
-                         
+
             <label>Email:</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               value={isEditing ? tempData.email : userData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               readOnly={!isEditing}
               className={isEditing ? 'editing' : ''}
             />
-                         
+
             <label>Data de nasc.:</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={isEditing ? tempData.dataNascimento : userData.dataNascimento}
               onChange={(e) => handleInputChange('dataNascimento', e.target.value)}
               readOnly={!isEditing}
               className={isEditing ? 'editing' : ''}
               placeholder="DD/MM/AAAA"
             />
-                         
+
             <label>CPF:</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={userData.cpf}
-              readOnly 
+              readOnly
             />
-                         
+
             <label>Senha:</label>
             <div className="senha-container">
-              <input type="password" value="12345678" readOnly />
+              <input type="password" value="********" readOnly />
               <button className="btn-small">ALTERAR SENHA</button>
             </div>
-                         
+
             <div className="perfil-buttons">
               {isEditing ? (
                 <>
@@ -152,7 +182,6 @@ const Perfil = () => {
         </div>
       </div>
 
-      {/*confirmação de exclusão */}
       {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal-content">
