@@ -28,7 +28,7 @@ const Header = ({ userProfilePhoto, userName }) => {
         <div className="profile-info" onClick={handleProfileClick}>
           <div className="profile-photo-container">
             <img 
-              src={defaultProfile} 
+              src={userProfilePhoto || defaultProfile} 
               alt="Foto do Perfil" 
               className="profile-photo"
             />

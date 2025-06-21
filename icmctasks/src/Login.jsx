@@ -49,6 +49,8 @@ export default function Login() {
       // Salvar no localStorage
       localStorage.setItem('userId', userId);
       localStorage.setItem('userName', user?.nome || '');
+      localStorage.setItem('userPhoto', user?.fotoPerfil || '');
+
       
       // Redirecionar
       navigate('/inicio');

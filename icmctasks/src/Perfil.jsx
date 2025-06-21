@@ -116,6 +116,7 @@ const Perfil = () => {
 
       setUserData(response.data);
       setTempData(response.data);
+      localStorage.setItem('userPhoto', response.data.fotoPerfil); 
       alert('Foto de perfil atualizada!');
     } catch (err) {
       console.error('Erro ao enviar imagem:', err);
