@@ -2,16 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Register.css';
 import logo from './images/icmc_tasks_logo.png';
+import axios from 'axios';
 
-//Declara um componente React chamado "Register" e já o exporta.
-//    Um componente é basicamente uma função que retorna um pedaço de interface.
 export default function Register() {
-  //Chama useNavigate() para obter a função `navigate`, que
-  //    usamos depois pra levar o usuário a outra rota.
   const navigate = useNavigate();
-
-  //Cria um estado interno `form` (objeto) e a função setForm()
-  //    para atualizar esse estado. Começamos com todos os campos vazios.
   const [form, setForm] = useState({
     nome: '',
     dataNasc: '',
@@ -19,52 +13,124 @@ export default function Register() {
     email: '',
     senha: ''
   });
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({
-      ...prev,       
-      [name]: value  
+      ...prev,
+      [name]: value
     }));
+    // Limpar erro quando usuário começar a digitar
+    if (error) setError('');
   };
 
-  
-  const handleSubmit = (e) => {
-    e.preventDefault();            // 9a. Impede o envio tradicional que recarrega a página
-    console.log('Enviando dados de cadastro:', form);
-                                  // 9b. Aqui você chamaria sua API para criar o usuário
-    navigate('/login');            // 9c. Depois de “cadastrar”, leva para a tela de login
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      // Preparar dados para o cadastro
+      const registerPayload = {
+        nome: form.nome,
+        dataNascimento: form.dataNasc,
+        cpf: form.cpf,
+        email: form.email,
+        senha: form.senha
+      };
+
+      console.log('Enviando dados de cadastro:', registerPayload);
+
+      // 1. Fazer o cadastro
+      const registerResponse = await axios.post(
+        'http://localhost:3000/api/users/register', 
+        registerPayload
+      );
+
+      console.log('Cadastro realizado:', registerResponse.data);
+
+      // 2. Fazer login automático após cadastro bem-sucedido
+      const loginResponse = await axios.post(
+        'http://localhost:3000/api/users/login',
+        {
+          email: form.email,
+          senha: form.senha
+        }
+      );
+
+      console.log('Login automático realizado:', loginResponse.data);
+
+      // 3. Salvar dados do usuário no localStorage
+      const { userId, user } = loginResponse.data;
+      
+      if (!userId) {
+        throw new Error('UserId não retornado após login');
+      }
+
+      localStorage.setItem('userId', userId);
+      localStorage.setItem('userName', user?.nome || form.nome);
+      localStorage.setItem('userEmail', user?.email || form.email);
+
+      // 4. Redirecionar diretamente para início
+      console.log('Redirecionando para /inicio');
+      navigate('/inicio');
+
+    } catch (error) {
+      console.error('Erro no processo:', error);
+      
+      // Tratamento de diferentes tipos de erro
+      if (error.response) {
+        const errorMsg = error.response.data?.erro || 
+                        error.response.data?.error || 
+                        'Erro ao processar solicitação';
+        setError(errorMsg);
+      } else if (error.request) {
+        setError('Erro de conexão. Verifique se o servidor está rodando.');
+      } else {
+        setError('Erro inesperado. Tente novamente.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    //container total da página, para aplicar o fundo gradiente
     <div className="register-page">
-
-      {/*o “card” branco centralizado*/}
       <div className="register-card">
-
-        {/* logo no topo, com alt para acessibilidade*/}
         <img
           src={logo}
           alt="ICMC Tasks"
           className="register-logo"
         />
 
-        {/* 15. formulário: onSubmit chama handleSubmit*/}
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div className="error-message" style={{
+              color: 'red',
+              marginBottom: '15px',
+              textAlign: 'center',
+              fontSize: '14px',
+              padding: '10px',
+              backgroundColor: '#ffe6e6',
+              borderRadius: '5px',
+              border: '1px solid #ffcccc'
+            }}>
+              {error}
+            </div>
+          )}
 
-          {/* 16. campo de texto para o nome */}
           <input
             type="text"
             name="nome"
             placeholder="Nome"
-            value={form.nome}         // liga ao estado `form.nome`
-            onChange={handleChange}   // sempre que mudar, atualiza o estado
-            required                  // torna obrigatório
+            value={form.nome}
+            onChange={handleChange}
+            required
+            disabled={loading}
           />
 
-          {/* 17. agrupa data de nasc e CPF lado a lado */}
           <div className="row">
             <input
               type="date"
@@ -73,6 +139,7 @@ export default function Register() {
               value={form.dataNasc}
               onChange={handleChange}
               required
+              disabled={loading}
             />
             <input
               type="text"
@@ -81,10 +148,10 @@ export default function Register() {
               value={form.cpf}
               onChange={handleChange}
               required
+              disabled={loading}
             />
           </div>
 
-          {/* 18. campo de e-mail */}
           <input
             type="email"
             name="email"
@@ -92,9 +159,9 @@ export default function Register() {
             value={form.email}
             onChange={handleChange}
             required
+            disabled={loading}
           />
 
-          {/* 19. campo de senha */}
           <input
             type="password"
             name="senha"
@@ -102,16 +169,16 @@ export default function Register() {
             value={form.senha}
             onChange={handleChange}
             required
+            disabled={loading}
           />
 
-          {/* 20. botão que envia o formulário */}
           <button
-            type="submit"          
+            type="submit"
             className="btn cadastre"
+            disabled={loading}
           >
-            CADASTRE-SE
+            {loading ? 'CADASTRANDO...' : 'CADASTRE-SE'}
           </button>
-
         </form>
       </div>
     </div>
