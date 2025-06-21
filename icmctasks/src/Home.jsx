@@ -1,15 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
-import fundo from './images/fundo.png';       //import do fundo
-import logo from './images/icmc_tasks_logo.png';    //import da logo
+import fundo from './images/fundo.png';
+import logo from './images/icmc_tasks_logo.png';
 
 export default function Home() {
-  const navigate = useNavigate(); //para redirecionar para as outras páginas (login e cadastro)
+  const navigate = useNavigate();
 
   return (
     <div
       className="home"
-      style={{ backgroundImage: `url(${fundo})` }}
+      style={{
+        backgroundImage: `url(${fundo})`,
+        backgroundSize: '50% 50%',       // 4 imagens (2x2)
+        backgroundRepeat: 'repeat',
+        backgroundPosition: 'center',
+      }}
     >
       <div className="overlay">
         <img src={logo} alt="ICMC Tasks" className="logo" />
