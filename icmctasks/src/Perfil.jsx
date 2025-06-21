@@ -13,7 +13,8 @@ const Perfil = () => {
     nome: '',
     email: '',
     dataNascimento: '',
-    cpf: ''
+    cpf: '',
+    fotoPerfil: 'https://cdn-icons-png.flaticon.com/512/194/194938.png'
   });
 
   const [tempData, setTempData] = useState({ ...userData });
@@ -96,10 +97,36 @@ const Perfil = () => {
     setShowDeleteModal(false);
   };
 
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('fotoPerfil', file);
+
+    try {
+      const userId = localStorage.getItem('userId');
+      const response = await axios.post(
+        `http://localhost:3000/api/users/upload/${userId}`,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
+
+      setUserData(response.data);
+      setTempData(response.data);
+      alert('Foto de perfil atualizada!');
+    } catch (err) {
+      console.error('Erro ao enviar imagem:', err);
+      alert('Erro ao enviar imagem');
+    }
+  };
+
   return (
     <div className="perfil-container">
       <Header
-        userProfilePhoto="https://cdn-icons-png.flaticon.com/512/194/194938.png"
+        userProfilePhoto={userData.fotoPerfil}
         userName={userData.nome}
       />
 
@@ -108,8 +135,14 @@ const Perfil = () => {
           <div className="perfil-header">
             <img
               className="perfil-avatar"
-              src="https://cdn-icons-png.flaticon.com/512/194/194938.png"
+              src={userData.fotoPerfil}
               alt="Avatar"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              disabled={isEditing}
             />
             <div className="perfil-info">
               <h2>{userData.nome}</h2>

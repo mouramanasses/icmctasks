@@ -22,7 +22,12 @@ const userSchema = new mongoose.Schema({
   senha: {
     type: String,
     required: true
-  }
+  },
+  fotoPerfil: {
+  type: String,
+  default: 'https://cdn-icons-png.flaticon.com/512/194/194938.png' // imagem padrão
+}
+
 });
 
 module.exports = mongoose.model('User', userSchema);
