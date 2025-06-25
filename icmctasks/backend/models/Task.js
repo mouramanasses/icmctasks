@@ -11,6 +11,11 @@ const taskSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  descricao: {
+  type: String,
+  trim: true,
+  default: ''
+  },
   prazo: {
     type: Date,
     required: true

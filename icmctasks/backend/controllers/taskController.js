@@ -1,334 +1,212 @@
 const Task = require('../models/Task');
 
+/* util simples para converter string ISO→Date e validar */
+const toDate = (iso) => {
+  const d = new Date(iso);
+  return isNaN(d) ? null : d;
+};
+
 const taskController = {
-  // Criar nova tarefa
+  /* ---------------------------------------------------
+   * Criar nova tarefa
+   * ------------------------------------------------- */
   async createTask(req, res) {
     try {
       const { userId } = req.params;
-      const { nome, prazo } = req.body;
+      const { nome, prazo, descricao = '' } = req.body;
 
-      // Validações básicas
       if (!nome || !prazo) {
-        return res.status(400).json({ 
-          error: 'Nome e prazo são obrigatórios' 
-        });
+        return res.status(400).json({ error: 'Nome e prazo são obrigatórios' });
       }
 
-      // Verificar se o prazo é uma data válida
-      const dataPrazo = new Date(prazo);
-      if (isNaN(dataPrazo.getTime())) {
-        return res.status(400).json({ 
-          error: 'Data de prazo inválida' 
-        });
+      const dataPrazo = toDate(prazo);
+      if (!dataPrazo) {
+        return res.status(400).json({ error: 'Data de prazo inválida' });
       }
 
-      // Determinar status inicial baseado no prazo
-      const agora = new Date();
-      let status = 'Em andamento';
-      if (dataPrazo < agora) {
-        status = 'Atrasada';
-      }
+      /* status inicial */
+      const status = dataPrazo < new Date() ? 'Atrasada' : 'Em andamento';
 
       const novaTask = new Task({
         userId,
         nome: nome.trim(),
+        descricao: descricao.trim(),
         prazo: dataPrazo,
         status
       });
 
       const taskSalva = await novaTask.save();
-      
-      res.status(201).json(taskSalva);
+      return res.status(201).json(taskSalva);
 
-    } catch (error) {
-      console.error('Erro ao criar tarefa:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor' 
-      });
+    } catch (err) {
+      console.error('Erro ao criar tarefa:', err);
+      res.status(500).json({ error: 'Erro interno do servidor' });
     }
   },
 
-  // Buscar todas as tarefas do usuário
+  /* ---------------------------------------------------
+   * Listar tarefas do usuário (+ estatísticas)
+   * ------------------------------------------------- */
   async getTasks(req, res) {
     try {
       const { userId } = req.params;
       const { filtro } = req.query;
 
-      // Primeiro, atualizar tarefas atrasadas
       const agora = new Date();
       await Task.updateMany(
-        {
-          userId: userId,
-          prazo: { $lt: agora },
-          status: { $in: ['Em andamento'] }
-        },
-        {
-          status: 'Atrasada'
-        }
+        { userId, prazo: { $lt: agora }, status: 'Em andamento' },
+        { status: 'Atrasada' }
       );
 
-      // Construir query de filtro
-      let query = { userId };
-      
+      const query = { userId };
       if (filtro) {
-        switch (filtro.toLowerCase()) {
-          case 'em_andamento':
-          case 'em andamento':
-            query.status = 'Em andamento';
-            break;
-          case 'concluidas':
-          case 'concluída':
-            query.status = 'Concluída';
-            break;
-          case 'atrasadas':
-          case 'atrasada':
-            query.status = 'Atrasada';
-            break;
-          default: break;
-        }
+        const map = {
+          'em_andamento': 'Em andamento',
+          'em andamento': 'Em andamento',
+          'concluidas'  : 'Concluída',
+          'concluída'   : 'Concluída',
+          'atrasadas'   : 'Atrasada',
+          'atrasada'    : 'Atrasada'
+        };
+        if (map[filtro.toLowerCase()]) query.status = map[filtro.toLowerCase()];
       }
 
-      // Buscar tarefas
       const tasks = await Task.find(query).sort({ prazo: 1 });
 
-      // Calcular estatísticas
-      const totalTasks = await Task.countDocuments({ userId });
-      const concluidas = await Task.countDocuments({ 
-        userId, 
-        status: 'Concluída' 
-      });
-      const atrasadas = await Task.countDocuments({ 
-        userId, 
-        status: 'Atrasada' 
-      });
-      const emAndamento = await Task.countDocuments({ 
-        userId, 
-        status: 'Em andamento' 
-      });
+      const [total, concluidas, atrasadas, emAndamento] = await Promise.all([
+        Task.countDocuments({ userId }),
+        Task.countDocuments({ userId, status: 'Concluída' }),
+        Task.countDocuments({ userId, status: 'Atrasada' }),
+        Task.countDocuments({ userId, status: 'Em andamento' })
+      ]);
 
-      res.json({
-        tasks,
-        estatisticas: {
-          total: totalTasks,
-          concluidas,
-          atrasadas,
-          emAndamento
-        }
-      });
+      res.json({ tasks, estatisticas: { total, concluidas, atrasadas, emAndamento } });
 
-    } catch (error) {
-      console.error('Erro ao buscar tarefas:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor' 
-      });
+    } catch (err) {
+      console.error('Erro ao buscar tarefas:', err);
+      res.status(500).json({ error: 'Erro interno do servidor' });
     }
   },
 
-  // Atualizar tarefa
+  /* ---------------------------------------------------
+   * Atualizar tarefa
+   * ------------------------------------------------- */
   async updateTask(req, res) {
     try {
       const { taskId } = req.params;
-      const { nome, prazo, status } = req.body;
+      const { nome, descricao, prazo, status } = req.body;
 
       const task = await Task.findById(taskId);
-      
-      if (!task) {
-        return res.status(404).json({ 
-          error: 'Tarefa não encontrada' 
-        });
-      }
+      if (!task) return res.status(404).json({ error: 'Tarefa não encontrada' });
 
-      // Atualizar campos se fornecidos
       if (nome !== undefined) {
-        if (!nome.trim()) {
-          return res.status(400).json({ 
-            error: 'Nome não pode estar vazio' 
-          });
-        }
+        if (!nome.trim()) return res.status(400).json({ error: 'Nome vazio' });
         task.nome = nome.trim();
       }
+      if (descricao !== undefined) task.descricao = descricao.trim();
 
       if (prazo !== undefined) {
-        const dataPrazo = new Date(prazo);
-        if (isNaN(dataPrazo.getTime())) {
-          return res.status(400).json({ 
-            error: 'Data de prazo inválida' 
-          });
-        }
+        const dataPrazo = toDate(prazo);
+        if (!dataPrazo) return res.status(400).json({ error: 'Prazo inválido' });
         task.prazo = dataPrazo;
-        
-        // Recalcular status baseado no novo prazo (se não foi concluída)
+
+        /* recalcular status se não estiver concluída */
         if (task.status !== 'Concluída') {
-          const agora = new Date();
-          if (dataPrazo < agora) {
-            task.status = 'Atrasada';
-          } else {
-            task.status = 'Em andamento';
-          }
+          task.status = dataPrazo < new Date() ? 'Atrasada' : 'Em andamento';
         }
       }
 
       if (status !== undefined) {
-        const statusValidos = ['Em andamento', 'Concluída', 'Atrasada'];
-        if (statusValidos.includes(status)) {
-          task.status = status;
-        }
+        const ok = ['Em andamento', 'Concluída', 'Atrasada'].includes(status);
+        if (!ok) return res.status(400).json({ error: 'Status inválido' });
+        task.status = status;
       }
 
       const taskAtualizada = await task.save();
-      
       res.json(taskAtualizada);
 
-    } catch (error) {
-      console.error('Erro ao atualizar tarefa:', error);
-      if (error.kind === 'ObjectId') {
-        return res.status(404).json({ 
-          error: 'Tarefa não encontrada' 
-        });
-      }
-      res.status(500).json({ 
-        error: 'Erro interno do servidor' 
-      });
+    } catch (err) {
+      console.error('Erro ao atualizar tarefa:', err);
+      res.status(500).json({ error: 'Erro interno do servidor' });
     }
   },
 
-  // Excluir tarefa
+  /* ---------------------------------------------------
+   * Excluir tarefa
+   * ------------------------------------------------- */
   async deleteTask(req, res) {
     try {
       const { taskId } = req.params;
-
       const task = await Task.findByIdAndDelete(taskId);
-      
-      if (!task) {
-        return res.status(404).json({ 
-          error: 'Tarefa não encontrada' 
-        });
-      }
-
-      res.json({ 
-        message: 'Tarefa excluída com sucesso' 
-      });
-
-    } catch (error) {
-      console.error('Erro ao excluir tarefa:', error);
-      if (error.kind === 'ObjectId') {
-        return res.status(404).json({ 
-          error: 'Tarefa não encontrada' 
-        });
-      }
-      res.status(500).json({ 
-        error: 'Erro interno do servidor' 
-      });
+      if (!task) return res.status(404).json({ error: 'Tarefa não encontrada' });
+      res.json({ message: 'Tarefa excluída com sucesso' });
+    } catch (err) {
+      console.error('Erro ao excluir tarefa:', err);
+      res.status(500).json({ error: 'Erro interno do servidor' });
     }
   },
 
-  // Marcar tarefa como concluída
+ 
+   /* Toggle Concluída / Não Concluída*/
+   
   async toggleTaskStatus(req, res) {
     try {
       const { taskId } = req.params;
-      const { concluida } = req.body;
-
       const task = await Task.findById(taskId);
-      
-      if (!task) {
-        return res.status(404).json({ 
-          error: 'Tarefa não encontrada' 
-        });
-      }
+      if (!task) return res.status(404).json({ error: 'Tarefa não encontrada' });
 
-      // Se marcar como concluída
-      if (concluida === true || task.status !== 'Concluída') {
-        task.status = 'Concluída';
+      if (task.status === 'Concluída') {
+        /* desfaz conclusão */
+        task.status = task.prazo < new Date() ? 'Atrasada' : 'Em andamento';
       } else {
-        // Se desmarcar, verificar se está atrasada
-        const agora = new Date();
-        if (task.prazo < agora) {
-          task.status = 'Atrasada';
-        } else {
-          task.status = 'Em andamento';
-        }
+        task.status = 'Concluída';
       }
+      const salvo = await task.save();
+      res.json(salvo);
 
-      const taskAtualizada = await task.save();
-      
-      res.json(taskAtualizada);
-
-    } catch (error) {
-      console.error('Erro ao alterar status da tarefa:', error);
-      if (error.kind === 'ObjectId') {
-        return res.status(404).json({ 
-          error: 'Tarefa não encontrada' 
-        });
-      }
-      res.status(500).json({ 
-        error: 'Erro interno do servidor' 
-      });
+    } catch (err) {
+      console.error('Erro ao alternar status:', err);
+      res.status(500).json({ error: 'Erro interno do servidor' });
     }
   },
 
-  // Buscar tarefas por período
+
+   /*Listar por período (hoje / semana / mes)*/
+ 
   async getTasksByPeriod(req, res) {
     try {
       const { userId, periodo } = req.params;
-      
-      let dataInicio, dataFim;
       const agora = new Date();
 
+      let inicio, fim;
       switch (periodo.toLowerCase()) {
         case 'hoje':
-          dataInicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-          dataFim = new Date(dataInicio);
-          dataFim.setDate(dataFim.getDate() + 1);
+          inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+          fim    = new Date(inicio); fim.setDate(fim.getDate() + 1);
           break;
         case 'semana':
-          const inicioSemana = agora.getDate() - agora.getDay();
-          dataInicio = new Date(agora.setDate(inicioSemana));
-          dataInicio.setHours(0, 0, 0, 0);
-          dataFim = new Date(dataInicio);
-          dataFim.setDate(dataFim.getDate() + 7);
+          inicio = new Date(agora); inicio.setDate(agora.getDate() - agora.getDay());
+          inicio.setHours(0,0,0,0);
+          fim = new Date(inicio); fim.setDate(fim.getDate() + 7);
           break;
         case 'mes':
-          dataInicio = new Date(agora.getFullYear(), agora.getMonth(), 1);
-          dataFim = new Date(agora.getFullYear(), agora.getMonth() + 1, 1);
+          inicio = new Date(agora.getFullYear(), agora.getMonth(), 1);
+          fim    = new Date(agora.getFullYear(), agora.getMonth() + 1, 1);
           break;
         default:
-          return res.status(400).json({
-            error: 'Período inválido. Use: hoje, semana ou mes'
-          });
+          return res.status(400).json({ error: 'Período inválido (hoje, semana, mes)' });
       }
-
-      // Atualizar tarefas atrasadas primeiro
-      await Task.updateMany(
-        {
-          userId: userId,
-          prazo: { $lt: new Date() },
-          status: { $in: ['Em andamento'] }
-        },
-        {
-          status: 'Atrasada'
-        }
-      );
 
       const tasks = await Task.find({
         userId,
-        prazo: {
-          $gte: dataInicio,
-          $lt: dataFim
-        }
+        prazo: { $gte: inicio, $lt: fim }
       }).sort({ prazo: 1 });
 
-      res.json({
-        periodo,
-        dataInicio,
-        dataFim,
-        tasks
-      });
+      res.json({ periodo, inicio, fim, tasks });
 
-    } catch (error) {
-      console.error('Erro ao buscar tarefas por período:', error);
-      res.status(500).json({ 
-        error: 'Erro interno do servidor' 
-      });
+    } catch (err) {
+      console.error('Erro ao buscar por período:', err);
+      res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 };

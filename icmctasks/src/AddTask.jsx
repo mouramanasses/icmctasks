@@ -1,281 +1,198 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+
 import Header from './components/Header/Header.jsx';
 import backIcon from './images/seta-voltar.png';
 import saveIcon from './images/salvar-tarefa.png';
 import './AddTask.css';
 
-const AddTask = () => {
+// baseURL centralizada – mude a porta aqui se precisar
+const api = axios.create({
+  baseURL: 'http://localhost:3000/api',
+  headers: { 'Content-Type': 'application/json' }
+});
+
+export default function AddTask() {
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Verificar se está em modo de edição
-  const isEditing = location.state?.isEditing || false;
-  const taskToEdit = location.state?.task;
-  
-  // Pegar o userId (você pode obter isso do contexto de autenticação)
-  const userId = localStorage.getItem('userId') || '507f1f77bcf86cd799439011'; // ID de exemplo
-  
+  const { state } = useLocation();
+
+  // se veio de edição
+  const isEditing   = state?.isEditing || false;
+  const taskToEdit  = state?.task     || null;
+
+  // id do usuário obtido no login
+  const userId = localStorage.getItem('userId');
+
   const [task, setTask] = useState({
     nome: '',
     descricao: '',
     prazo: '',
     status: 'Em andamento'
   });
-  
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error,   setError]   = useState('');
 
-  // Preencher campos se estiver editando
+  /* ---------- preencher formulário em modo edição ---------- */
   useEffect(() => {
     if (isEditing && taskToEdit) {
-      // Converter a data para o formato datetime-local
-      const formatDateForInput = (date) => {
-        if (!date) return '';
-        const d = new Date(date);
-        if (isNaN(d.getTime())) return '';
-        
-        // Formato: YYYY-MM-DDTHH:mm
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
-      };
-
+      const d   = new Date(taskToEdit.prazo);
+      const iso = !isNaN(d) ? d.toISOString().slice(0,16) : ''; // yyyy-MM-ddTHH:mm
       setTask({
-        nome: taskToEdit.nome || '',
-        descricao: taskToEdit.descricao || '',
-        prazo: formatDateForInput(taskToEdit.prazo),
-        status: taskToEdit.status || 'Em andamento'
+        nome:        taskToEdit.nome,
+        descricao:   taskToEdit.descricao || '',
+        prazo:       iso,
+        status:      taskToEdit.status || 'Em andamento'
       });
     }
   }, [isEditing, taskToEdit]);
 
-  const handleChange = (e) => {
+  /* -------------------- handlers --------------------------- */
+  const handleChange = e => {
     const { name, value } = e.target;
     setTask(prev => ({ ...prev, [name]: value }));
-    
-    // Limpar erro quando o usuário começar a digitar
-    if (error) setError(null);
+    if (error) setError('');
   };
 
-  const validateForm = () => {
-    if (!task.nome.trim()) {
-      setError('O título é obrigatório');
-      return false;
-    }
-    
-    if (!task.prazo) {
-      setError('O prazo é obrigatório');
-      return false;
-    }
-    
-    // Verificar se a data é válida
-    const prazoDate = new Date(task.prazo);
-    if (isNaN(prazoDate.getTime())) {
-      setError('Data de prazo inválida');
-      return false;
-    }
-    
+  const validate = () => {
+    if (!task.nome.trim())        { setError('Título obrigatório'); return false; }
+    if (!task.prazo)              { setError('Prazo obrigatório');  return false; }
+    if (isNaN(new Date(task.prazo))) { setError('Data inválida');   return false; }
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
-    
+    if (!validate()) return;
+
     setLoading(true);
-    setError(null);
-    
     try {
-      const taskData = {
-        nome: task.nome.trim(),
-        prazo: new Date(task.prazo).toISOString(),
-        status: task.status
+      const payload = {
+        nome:       task.nome.trim(),
+        descricao:  task.descricao.trim(),
+        prazo:      new Date(task.prazo).toISOString(),
+        status:     task.status
       };
-      
-      // Adicionar descrição se fornecida (campo não obrigatório no backend)
-      if (task.descricao.trim()) {
-        taskData.descricao = task.descricao.trim();
-      }
-      
-      let response;
-      
+
       if (isEditing) {
-        // Atualizar tarefa existente
-        response = await fetch(`/api/tasks/${taskToEdit._id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(taskData)
-        });
+        await api.put(`/tasks/${taskToEdit._id}`, payload);
       } else {
-        // Criar nova tarefa
-        response = await fetch(`/api/${userId}/tasks`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(taskData)
-        });
+        await api.post(`/${userId}/tasks`, payload);
       }
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao salvar tarefa');
-      }
-      
-      const savedTask = await response.json();
-      console.log('Task saved:', savedTask);
-      
-      // Redirecionar para a página de tarefas ou lista
-      navigate('/inicio');
-      
+      navigate('/inicio');                // volta para lista
     } catch (err) {
-      setError(err.message);
+      const msg = err.response?.data?.error || 'Erro ao salvar';
+      setError(msg);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  /* -------------------- UI --------------------------- */
   return (
     <div className="add-task-page">
-      <Header userName="Rafael Carmanhani" />
-      
+      <Header userName={localStorage.getItem('userName') || ''} />
+
       <div className="add-task-content">
         <div className="add-task-card">
-          {/* Botão Voltar */}
-          <button 
+
+          {/* Botões de topo */}
+          <button
             className="task-back-button"
             onClick={() => navigate(-1)}
-            aria-label="Voltar"
             disabled={loading}
+            aria-label="Voltar"
           >
             <img src={backIcon} alt="Voltar" />
           </button>
 
-          {/* Botão Salvar */}
-          <button 
+          <button
             className="save-task-button"
             onClick={handleSubmit}
-            aria-label="Salvar tarefa"
             disabled={loading}
+            aria-label="Salvar"
           >
             <img src={saveIcon} alt="Salvar" />
           </button>
 
-          {/* Título da Página */}
           <h1 className="add-task-title">
             {isEditing ? 'EDITAR TAREFA' : 'NOVA TAREFA'}
           </h1>
-          
-          {/* Exibir erro se houver */}
+
           {error && (
-            <div className="error-message" style={{ 
-              color: '#dc3545', 
-              margin: '10px 0', 
-              padding: '10px', 
-              border: '1px solid #dc3545', 
-              borderRadius: '4px',
-              backgroundColor: '#f8d7da'
-            }}>
+            <div className="error-message">
               {error}
             </div>
           )}
-          
-          {/* Formulário */}
+
           <form onSubmit={handleSubmit}>
-            {/* Campo Título */}
+            {/* Título */}
             <div className="form-group">
               <label htmlFor="nome">Título *</label>
               <input
-                type="text"
-                id="nome"
-                name="nome"
+                id="nome" name="nome"
                 value={task.nome}
                 onChange={handleChange}
-                placeholder="Digite o título da tarefa"
-                required
                 disabled={loading}
+                placeholder="Digite o título"
+                required
               />
             </div>
 
-            {/* Campo Descrição */}
+            {/* Descrição */}
             <div className="form-group">
               <label htmlFor="descricao">Descrição</label>
               <textarea
-                id="descricao"
-                name="descricao"
+                id="descricao" name="descricao"
                 value={task.descricao}
                 onChange={handleChange}
-                placeholder="Descreva a tarefa... (opcional)"
-                rows="5"
                 disabled={loading}
+                placeholder="Descreva a tarefa (opcional)"
+                rows="5"
               />
             </div>
 
-            {/* Campos Data e Status */}
+            {/* Prazo + Status */}
             <div className="form-row">
-              {/* Campo Prazo */}
               <div className="form-group">
                 <label htmlFor="prazo">Prazo *</label>
                 <input
                   type="datetime-local"
-                  id="prazo"
-                  name="prazo"
+                  id="prazo" name="prazo"
                   value={task.prazo}
                   onChange={handleChange}
-                  required
                   disabled={loading}
+                  required
                 />
               </div>
 
-              {/* Campo Status */}
               <div className="form-group">
                 <label htmlFor="status">Status</label>
                 <select
-                  id="status"
-                  name="status"
+                  id="status" name="status"
                   value={task.status}
                   onChange={handleChange}
                   disabled={loading}
                 >
-                  <option value="Em andamento">Em andamento</option>
-                  <option value="Concluída">Concluída</option>
-                  <option value="Atrasada">Atrasada</option>
+                  <option>Em andamento</option>
+                  <option>Concluída</option>
+                  <option>Atrasada</option>
                 </select>
               </div>
             </div>
-            
-            {/* Botão de submit escondido para funcionar com Enter */}
-            <button 
-              type="submit" 
-              style={{ display: 'none' }}
-              disabled={loading}
-            >
-              Salvar
-            </button>
+
+            {/* Botão escondido para submit via Enter */}
+            <button type="submit" style={{ display: 'none' }} disabled={loading}/>
           </form>
-          
-          {/* Indicador de carregamento */}
+
           {loading && (
-            <div className="loading-indicator" style={{
-              textAlign: 'center',
-              margin: '20px 0',
-              color: '#666'
-            }}>
-              {isEditing ? 'Atualizando tarefa...' : 'Criando tarefa...'}
+            <div className="loading-indicator">
+              {isEditing ? 'Atualizando...' : 'Salvando...'}
             </div>
           )}
         </div>
       </div>
     </div>
   );
-};
-
-export default AddTask;
+}
