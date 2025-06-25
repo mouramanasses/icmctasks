@@ -1,48 +1,41 @@
+// src/components/Header/Header.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../images/icmc_tasks_logo.png';
-import logoutIcon from '../../images/logout.png'; 
-import defaultProfile from '../../images/default-profile.png'; 
+import logo        from '../../images/icmc_tasks_logo.png';
+import logoutIcon  from '../../images/logout.png';
+import defaultPic  from '../../images/default-profile.png';
 
 import './Header.css';
 
-const Header = ({ userProfilePhoto, userName }) => {
+export default function Header({ userProfilePhoto, userName }) {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Lógica de logout
-    navigate('/');
-  };
+  /* pega foto do localStorage se a prop vier vazia */
+  const photo = userProfilePhoto || localStorage.getItem('userPhoto') || defaultPic;
 
-  const handleProfileClick = () => {
-    navigate('/perfil'); // Ação ao clicar na área combinada
-  };
+  const handleLogout  = () => { localStorage.clear(); navigate('/'); };
+  const handleProfile = () => navigate('/perfil');
 
   return (
-    <header className="header-container">
-      <div className="logo-container" onClick={() => navigate('/inicio')}>
-        <img src={logo} alt="Logo ICMC Tasks" className="logo" />
+    <header className="header">
+      {/* ---------- logo ---------- */}
+      <div className="logo-box" onClick={() => navigate('/inicio')}>
+        <img src={logo} alt="ICMC Tasks" />
       </div>
 
-      <div className="profile-area">
-        <div className="profile-info" onClick={handleProfileClick}>
-          <div className="profile-photo-container">
-            <img 
-              src={userProfilePhoto || defaultProfile} 
-              alt="Foto do Perfil" 
-              className="profile-photo"
-            />
+      {/* ---------- perfil ---------- */}
+      <div className="profile-box">
+        <button className="profile-info" onClick={handleProfile}>
+          <div className="avatar">
+            <img src={photo} alt="Foto de perfil" />
           </div>
-          {userName && <span className="user-name">{userName}</span>}
-      </div>
+          {userName && <span className="name">{userName}</span>}
+        </button>
 
-
-        <button className="logout-button" onClick={handleLogout}>
-          <img src={logoutIcon} alt="Ícone de Logout" className="logout-icon" />
+        <button className="logout" onClick={handleLogout} title="Sair">
+          <img src={logoutIcon} alt="Logout" />
         </button>
       </div>
     </header>
   );
-};
-
-export default Header;
+}
