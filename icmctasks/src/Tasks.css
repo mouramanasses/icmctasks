@@ -1,137 +1,187 @@
 .tasks-page {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh; /* Garante que a página ocupe toda a altura */
-      background-color: #FFFFFF;
-    }
-    
-    .tasks-content {
-      flex-grow: 1;
-      padding: 40px;
-      align-items: center;
-    }
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #f0f4ff, #ffffff);
+  font-family: 'Jaldi', sans-serif;
+}
 
-    .tasks-card {
-      background: 
-        /* Fundo branco interno */
-        linear-gradient(#f9f9f9, #f9f9f9) padding-box,
-        /* Borda gradiente */
-        linear-gradient(to right, #0065F8, #00FFDE) border-box;
-      
-      padding: 2rem;
-      border: 3px solid transparent;
-      border-radius: 1rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      width: 925px;
-      height: 570px;
-      text-align: center;
-      margin: auto;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    } 
+.tasks-content {
+  flex-grow: 1;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
 
-    .task-back-button {
-      position: absolute;
-      top: 1.5rem;
-      left: 1.5rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      width: 41px;
-      height: 29px;
-    }
-    
-    .task-back-button img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      transition: transform 0.3s ease;
-    } 
-    
-    .task-back-button:hover img {
-      transform: scale(1.05);
-    }
+.tasks-card {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  border: 1px solid #d0d7e2;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 860px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
 
-    /* Título da Tarefa */
-    .task-title {
-      font-family: Jaldi bold sans-serif;
-      text-align: center;
-      font-size: 36px;
-      margin-top: 1rem;
-      color: #000;
-      padding: 0 2rem;
-    }
+/* Botão voltar */
+.task-back-button {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  background-color: white;
+  border-radius: 50%;
+  border: 2px solid #e0e7ff;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 0;
+}
 
-    /* Descrição da Tarefa */
-    .task-description {
-      font-family: Jaldi regular sans-serif;
-      font-size: 26px;
-      flex-grow: 1;
-      padding-left: 2rem;
-      text-align: left;
-      color: #303742;
-    }
+.task-back-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
-    /* Container do rodapé */
-    .task-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: auto; /* Empurra para a parte inferior */
-      padding-top: 1.5rem;
-      padding-right: 2rem;
-    }
+.task-back-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
 
-    /* Estilo do prazo */
-    .task-deadline {
-      font-family: Jaldi bold sans-serif;
-      font-size: 36px;
-      color: #303742;
-      padding: 0.5rem 2rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+/* Título */
+.task-title {
+  font-size: 34px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #2a2e35;
+  padding: 0 1rem;
+}
 
-    /* Estilo do status */
-    .task-status {
-      font-family: Jaldi bold sans-serif;
-      font-size: 36px;
-      font-weight: 500;
-      color: #303742;
-    }
-    
-    .task-edit-button {
-      position: absolute;
-      bottom: 3rem;
-      right: 4rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      margin-bottom: 8.5rem;
-      width: 110px;
-      height: 110px;
-    }
+/* Descrição */
+.task-description {
+  font-size: 20px;
+  color: #374151;
+  line-height: 1.6;
+  margin-top: 1rem;
+  flex-grow: 1;
+  padding: 0 0.5rem;
+  text-align: justify;
+}
 
-    .task-delete-button {
-      position: absolute;
-      bottom: 3rem;
-      right: 4rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      width: 110px;
-      height: 110px;
-    }
+/* Rodapé com prazo e status */
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 2rem;
+}
 
-    .task-edit-button:hover img {
-      transform: scale(1.05);
-    }
+.task-deadline {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #1e293b;
+}
 
-    .task-delete-button:hover img {
-      transform: scale(1.05);
-    }
+.task-status {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Botões flutuantes */
+.task-edit-button,
+.task-delete-button {
+  position: fixed;
+  bottom: 40px;
+  width: 65px;
+  height: 65px;
+  background-color: white;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 1000;
+}
+
+.task-edit-button {
+  right: 120px;
+}
+
+.task-delete-button {
+  right: 40px;
+}
+
+.task-edit-button img,
+.task-delete-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.task-edit-button:hover,
+.task-delete-button:hover {
+  transform: scale(1.1);
+}
+
+/* Estados de carregamento/erro */
+.loading,
+.error {
+  text-align: center;
+  font-size: 20px;
+  color: #475569;
+  margin-top: 2rem;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .tasks-card {
+    padding: 2rem;
+  }
+
+  .task-title {
+    font-size: 28px;
+  }
+
+  .task-description {
+    font-size: 18px;
+  }
+
+  .task-deadline,
+  .task-status {
+    font-size: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .task-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .task-edit-button,
+  .task-delete-button {
+    width: 55px;
+    height: 55px;
+  }
+
+  .task-edit-button {
+    right: 100px;
+  }
+
+  .task-delete-button {
+    right: 30px;
+  }
+}
