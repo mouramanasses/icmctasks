@@ -18,7 +18,7 @@ exports.register = async (req, res) => {
     await newUser.save();
     res.status(201).json({ mensagem: 'Usuário registrado com sucesso!' });
   } catch (err) {
-    console.error('Erro no registro:', err);  // <-- Log mais detalhado do erro
+    console.error('Erro no registro:', err);
     res.status(500).json({ erro: 'Erro ao registrar usuário.' });
   }
 };
@@ -30,12 +30,14 @@ exports.login = async (req, res) => {
     if (!user || !(await bcrypt.compare(senha, user.senha))) {
       return res.status(401).send({ error: 'Credenciais inválidas' });
     }
+    
     res.send({ 
         message: 'Login bem-sucedido',
         userId: user._id,
         user: {
             nome: user.nome,
-            email: user.email
+            email: user.email,
+            fotoPerfil: user.fotoPerfil
         }
     });
   } catch (err) {
@@ -45,7 +47,7 @@ exports.login = async (req, res) => {
 
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-senha'); // não envia a senha
+    const user = await User.findById(req.params.id).select('-senha');
     if (!user) {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
@@ -88,3 +90,26 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+exports.updatePassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { senha: hashedPassword },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    res.json({ message: 'Senha atualizada com sucesso' });
+  } catch (err) {
+    console.error('Erro ao atualizar senha:', err);
+    res.status(500).json({ error: 'Erro ao atualizar senha' });
+  }
+};

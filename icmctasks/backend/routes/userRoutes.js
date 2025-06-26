@@ -8,16 +8,17 @@ router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.get('/:id', userController.getUserById);
 router.put('/:id', userController.updateUser);
+router.put('/password/:id', userController.updatePassword);
 router.post('/upload/:id', upload.single('fotoPerfil'), async (req, res) => {
   try {
     const imageUrl = `http://localhost:3000/uploads/${req.file.filename}`;
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { fotoPerfil: imageUrl },
-      { new: true } // retorna os dados atualizados
+      { new: true } 
     );
     
-    res.json(user); // ← IMPORTANTE! Retorna o usuário atualizado
+    res.json(user);
   } catch (err) {
     console.error('Erro ao salvar imagem:', err);
     res.status(500).json({ error: 'Erro ao salvar imagem' });

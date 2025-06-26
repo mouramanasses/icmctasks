@@ -1,5 +1,4 @@
-// src/components/Header/Header.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo        from '../../images/icmc_tasks_logo.png';
 import logoutIcon  from '../../images/logout.png';
@@ -9,9 +8,33 @@ import './Header.css';
 
 export default function Header({ userProfilePhoto, userName }) {
   const navigate = useNavigate();
-
-  /* pega foto do localStorage se a prop vier vazia */
-  const photo = userProfilePhoto || localStorage.getItem('userPhoto') || defaultPic;
+  
+  const [currentPhoto, setCurrentPhoto] = useState('');
+  const [currentUserName, setCurrentUserName] = useState('');
+  
+  useEffect(() => {
+    const updateUserData = () => {
+      const photo = userProfilePhoto || localStorage.getItem('userPhoto') || defaultPic;
+      const name = userName || localStorage.getItem('userName') || '';
+      
+      setCurrentPhoto(photo);
+      setCurrentUserName(name);
+    };
+    
+    updateUserData();
+    
+    window.addEventListener('storage', updateUserData);
+    
+    window.addEventListener('userPhotoUpdated', updateUserData);
+    
+    window.addEventListener('userDataUpdated', updateUserData);
+    
+    return () => {
+      window.removeEventListener('storage', updateUserData);
+      window.removeEventListener('userPhotoUpdated', updateUserData);
+      window.removeEventListener('userDataUpdated', updateUserData);
+    };
+  }, [userProfilePhoto, userName]);
 
   const handleLogout  = () => { localStorage.clear(); navigate('/'); };
   const handleProfile = () => navigate('/perfil');
@@ -27,9 +50,9 @@ export default function Header({ userProfilePhoto, userName }) {
       <div className="profile-box">
         <button className="profile-info" onClick={handleProfile}>
           <div className="avatar">
-            <img src={photo} alt="Foto de perfil" />
+            <img src={currentPhoto} alt="Foto de perfil" />
           </div>
-          {userName && <span className="name">{userName}</span>}
+          {currentUserName && <span className="name">{currentUserName}</span>}
         </button>
 
         <button className="logout" onClick={handleLogout} title="Sair">

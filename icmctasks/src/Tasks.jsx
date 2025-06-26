@@ -15,24 +15,23 @@ const Tasks = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Pegar o userId (você pode obter isso do contexto de autenticação)
-  const userId = localStorage.getItem('userId') || '507f1f77bcf86cd799439011'; // ID de exemplo
+  const userId = localStorage.getItem('userId') || '507f1f77bcf86cd799439011';
+  const userName = localStorage.getItem('userName') || 'Usuário';
+  const userPhoto = localStorage.getItem('userPhoto') || '';
   
   useEffect(() => {
     const fetchTask = async () => {
       try {
         setLoading(true);
         
-        // Se a tarefa foi passada via state, usar ela
         if (location.state?.task) {
           setTask(location.state.task);
           setLoading(false);
           return;
         }
         
-        // Caso contrário, buscar do backend
         if (taskId) {
-          const response = await fetch(`/api/${userId}/tasks`);
+          const response = await fetch(`http://localhost:3000/api/${userId}/tasks`);
           if (!response.ok) {
             throw new Error('Erro ao buscar tarefa');
           }
@@ -80,17 +79,31 @@ const Tasks = () => {
     
     if (confirmDelete) {
       try {
-        const response = await fetch(`/api/tasks/${currentTask._id}`, {
+        console.log('Attempting to delete task:', currentTask._id);
+        console.log('User ID:', userId);
+        
+        const response = await fetch(`http://localhost:3000/api/tasks/${currentTask._id}`, {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          }
         });
         
-        if (!response.ok) {
-          throw new Error('Erro ao deletar tarefa');
+        let result = null;
+        try {
+          const responseText = await response.text();
+          if (responseText) {
+            result = JSON.parse(responseText);
+          }
+        } catch (jsonError) {
+          console.log('Sem corpo de resposta JSON');
         }
         
-        // Redirecionar para a página inicial após deletar
+        alert('Tarefa deletada com sucesso!');
         navigate('/inicio');
+        
       } catch (err) {
+        console.error('Delete error:', err);
         alert('Erro ao deletar tarefa: ' + err.message);
       }
     }
@@ -124,7 +137,7 @@ const Tasks = () => {
   if (loading) {
     return (
       <div className="tasks-page">
-        <Header userName="Rafael Carmanhani" />
+        <Header userName={userName} userProfilePhoto={userPhoto} />
         <div className="tasks-content">
           <div className="loading">Carregando...</div>
         </div>
@@ -135,7 +148,7 @@ const Tasks = () => {
   if (error) {
     return (
       <div className="tasks-page">
-        <Header userName="Rafael Carmanhani" />
+        <Header userName={userName} userProfilePhoto={userPhoto} />
         <div className="tasks-content">
           <div className="error">Erro: {error}</div>
           <button onClick={() => navigate('/inicio')}>Voltar</button>
@@ -146,47 +159,42 @@ const Tasks = () => {
 
   return (
     <div className="tasks-page">
-      {/* Header com props personalizadas */}
       <Header 
-        userName="Rafael Carmanhani"
+        userName={userName}
+        userProfilePhoto={userPhoto}
       />
       
-      {/* Container vazio para manter a estrutura */}
       <div className="tasks-content">
         <div className="tasks-card">
-            {/* Botão Voltar */}
             <button 
               className="task-back-button"
-              onClick={() => navigate('/inicio')} // Navega para a página principal
+              onClick={() => navigate('/inicio')}
               aria-label="Voltar para página principal"
             >
               <img src={backIcon} alt="Voltar" />
             </button>
 
-            {/* Título Centralizado */}
-              <h1 className="task-title">{currentTask.nome}</h1>
+            <h1 className="task-title">{currentTask.nome}</h1>
           
-            {/* Descrição da Tarefa */}
-              <div className="task-description">
-                <p>{currentTask.descricao || 'Sem descrição disponível'}</p>
-              </div>
+            <div className="task-description">
+              <p>{currentTask.descricao || 'Sem descrição disponível'}</p>
+            </div>
             
-            {/* Novo rodapé */}
-              <div className="task-footer">
-                <div className="task-deadline">
-                  <span>⏰</span>
-                  <span>{formatDate(currentTask.prazo)}</span>
-                </div>
-                <div className="task-status">
-                  <span>STATUS: </span>
-                  <span style={{ color: getStatusColor(currentTask.status) }}>
-                    {currentTask.status}
-                  </span>
-                </div>
+            <div className="task-footer">
+              <div className="task-deadline">
+                <span>⏰</span>
+                <span>{formatDate(currentTask.prazo)}</span>
               </div>
+              <div className="task-status">
+                <span>STATUS: </span>
+                <span style={{ color: getStatusColor(currentTask.status) }}>
+                  {currentTask.status}
+                </span>
+              </div>
+            </div>
         </div>
       </div>
-      {/* Botão Editar Tarefa */}
+
       <button 
         className="task-edit-button"
         onClick={handleEdit}
@@ -195,7 +203,6 @@ const Tasks = () => {
         <img src={editTask} alt="Editar" />
       </button>
 
-      {/* Botão Deletar Tarefa */}
       <button 
         className="task-delete-button"
         onClick={handleDelete}

@@ -116,12 +116,29 @@ const Perfil = () => {
 
       setUserData(response.data);
       setTempData(response.data);
-      localStorage.setItem('userPhoto', response.data.fotoPerfil); 
+      
+      localStorage.setItem('userPhoto', response.data.fotoPerfil);
+      
+      if (response.data.nome) {
+        localStorage.setItem('userName', response.data.nome);
+      }
+      
+      window.dispatchEvent(new CustomEvent('userPhotoUpdated', {
+        detail: { 
+          photo: response.data.fotoPerfil,
+          name: response.data.nome 
+        }
+      }));
+      
       alert('Foto de perfil atualizada!');
     } catch (err) {
       console.error('Erro ao enviar imagem:', err);
       alert('Erro ao enviar imagem');
     }
+  };
+
+  const handleChangePassword = () => {
+    navigate('/newpassword');
   };
 
   return (
@@ -190,7 +207,12 @@ const Perfil = () => {
             <label>Senha:</label>
             <div className="senha-container">
               <input type="password" value="********" readOnly />
-              <button className="btn-small">ALTERAR SENHA</button>
+              <button 
+                className="btn-small" 
+                onClick={handleChangePassword}
+              >
+                ALTERAR SENHA
+              </button>
             </div>
 
             <div className="perfil-buttons">
