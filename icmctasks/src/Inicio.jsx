@@ -10,7 +10,7 @@ import TaskCard      from './components/Inicio/TaskCard';
 import AddTaskButton from './components/Inicio/AddTaskButton';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',     // ↰ backend
+  baseURL: 'http://localhost:3000/api',
   headers: { 'Content-Type': 'application/json' }
 });
 
@@ -20,21 +20,24 @@ export default function Inicio() {
   /* ---------- info do usuário ---------- */
   const [userName]  = useState(localStorage.getItem('userName')  || '');
   const [userPhoto] = useState(localStorage.getItem('userPhoto') || '');
-  const  userId     = localStorage.getItem('userId');            // <- chave!
+  const  userId     = localStorage.getItem('userId');
 
   /* ---------- tarefas ---------- */
-  const [tasks, setTasks]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState('');
+  const [tasks, setTasks]             = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState('');
   const [searchValue, setSearchValue] = useState('');
 
-  /* ---------- carregar na montagem ---------- */
+  /* ---------- filtro por status ---------- */
+  const [statusFilter, setStatusFilter] = useState(''); 
+
+  /* ---------- carregar sempre que USER ou FILTRO mudar ---------- */
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const resp = await api.get(`/${userId}/tasks`);
-        // o controller devolve { tasks, estatisticas } – pegamos só as tasks
-        setTasks(resp.data.tasks || resp.data); 
+        const query = statusFilter ? `?filtro=${statusFilter}` : '';
+        const resp  = await api.get(`/${userId}/tasks${query}`);
+        setTasks(resp.data.tasks || resp.data);
       } catch (err) {
         console.error(err);
         setError('Erro ao carregar tarefas.');
@@ -43,13 +46,15 @@ export default function Inicio() {
       }
     };
     if (userId) fetchTasks();
-  }, [userId]);
+  }, [userId, statusFilter]);
 
   /* ---------- filtro de pesquisa ---------- */
-  const filtered = tasks.filter(t =>
-    t.nome.toLowerCase().includes(searchValue.toLowerCase()) ||
-    (t.descricao || '').toLowerCase().includes(searchValue.toLowerCase())
-  );
+  const filtradas = tasks
+    // filtro por texto
+    .filter(t =>
+      t.nome.toLowerCase().includes(searchValue.toLowerCase()) ||
+      (t.descricao || '').toLowerCase().includes(searchValue.toLowerCase())
+    );
 
   /* ---------- handlers ---------- */
   const handleAddTask   = () => navigate('/addtask');
@@ -64,18 +69,17 @@ export default function Inicio() {
         <Pesquisa
           value={searchValue}
           onChange={setSearchValue}
-          onFilterClick={() => console.log('Filtro')}
+          filterStatus={statusFilter}
+          onFilterSelect={setStatusFilter}  
         />
 
-        {/* LOADING / ERRO */}
         {loading && <p className="loading">Carregando tarefas…</p>}
         {error    && <p className="error">{error}</p>}
 
-        {/* LISTA */}
         {!loading && !error && (
           <>
             <div className="task-cards-list">
-              {filtered.map(task => (
+              {filtradas.map(task => (
                 <TaskCard
                   key={task._id}
                   titulo={task.nome}
@@ -90,7 +94,7 @@ export default function Inicio() {
               ))}
             </div>
 
-            {filtered.length === 0 && (
+            {filtradas.length === 0 && (
               <div className="no-tasks-message">
                 <p>Nenhuma tarefa encontrada</p>
               </div>

@@ -1,67 +1,68 @@
-
-.pesquisa-container {
-  position: relative;
-  margin-bottom: 2rem; 
-}
-
-.pesquisa {
+/* --- Campo de busca + botão --- */
+.pesquisa-wrapper {
+  position: relative;                 /* Âncora para o menu */
   display: flex;
   align-items: center;
-  background-color: #e5e7eb; 
-  border-radius: 0.5rem; 
+  gap: .25rem;
+  background-color: #e5e7eb;          /* Tailwind gray‑200 */
+  border-radius: .5rem;
+  padding: .5rem .75rem;              /* espaço interno uniforme */
 }
 
-.pesquisa-input-area {
-  flex: 1;
-  position: relative;
-}
-
-
+/* Input de texto */
 .pesquisa-input {
-  width: 100%;
-  padding-left: 3rem; 
-  padding-right: 1rem;
-  padding-top: 0.75rem; 
-  padding-bottom: 0.75rem;
-  background-color: transparent;
-  color: #374151;
-  border: none; 
+  flex: 1;
+  min-width: 0;                       /* evita overflow em telas estreitas */
+  border: none;
+  background: transparent;
+  color: #374151;                     /* gray‑700 */
+  padding: .5rem 0;
   outline: none;
 }
 
-.filtro-botao {
-  padding: 0.75rem;
-  background-color: transparent;
+/* Botão do ícone de filtro */
+.pesquisa-filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: .5rem;
+  background: transparent;
   border: none;
   cursor: pointer;
 }
 
-
-.filtro-icon {
-  width: 1.25rem; 
-  height: 1.25rem; 
-  color: #4b5563;
+/* Ícone — mantém tamanho de 20 px (1.25 rem) */
+.pesquisa-filter-btn img {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
-.filtro-menu {
+/* --- Dropdown --- */
+.pesquisa-filter-menu {
   position: absolute;
-  top: 100% 10px; 
-  right: 0; 
-  background-color: #e5e7eb; 
-  border-radius: 0.5rem;
+  right: 0;                           /* alinha com o ícone */
+  top: calc(100% + 8px);              /* 8 px abaixo do wrapper */
+  list-style: none;
+  margin: 0;
+  padding: .5rem 0;
   min-width: 180px;
-  z-index: 100; 
-  padding:8px;
+  background: #e5e7eb;
+  border-radius: .5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  z-index: 100;
 }
 
-.filtro-opcao {
-  display: block; 
-  width: 100%;
-  padding: 12px 16px;
-  text-align: left;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
+/* Itens do menu */
+.pesquisa-filter-menu li {
+  padding: .5rem 1rem;
+  font-size: .9375rem;                /* ~15 px */
   color: #374151;
-  font-size: 15px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Hover e item selecionado */
+.pesquisa-filter-menu li:hover,
+.pesquisa-filter-menu li.selected {
+  background: #d1d5db;                /* gray‑300 */
 }

@@ -1,62 +1,69 @@
-import React, { useState } from 'react';
+// src/components/Inicio/Pesquisa.jsx
+import React, { useState, useRef, useEffect } from 'react';
+import filterIcon from '../../images/filtro.svg';   // use o seu ícone
 import './Pesquisa.css';
-import iconeFiltro from '../../images/filtro.svg';
 
-const Pesquisa = ({ value, onChange, onFilterClick }) => {
-  // controle do estado do menu do filtro
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
+export default function Pesquisa({
+  value,
+  onChange,
+  filterStatus,
+  onFilterSelect
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const ref = useRef(null);
 
-  const handleFilterButtonClick = () => {
-    setShowFilterMenu(prev => !prev); //inverte os valores, essencial para verificar oclick
-  };
+  // Fecha o menu clicando fora
+  useEffect(() => {
+    const handleClickOutside = e => {
+      if (ref.current && !ref.current.contains(e.target)) setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const handleOptionClick = () => {
-    setShowFilterMenu(false);
-  };
+  const options = [
+    { label: 'Todas',        value: '' },
+    { label: 'Em andamento', value: 'em_andamento' },
+    { label: 'Concluídas',   value: 'concluidas' },
+    { label: 'Atrasadas',    value: 'atrasadas' }
+  ];
 
   return (
-    <div className="pesquisa-container">
-      <div className="pesquisa">
-        <div className="pesquisa-input-area">
-          <input
-            type="text"
-            placeholder="Pesquisar"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="pesquisa-input"
-          />
-        </div>
-        <button
-          onClick={handleFilterButtonClick}
-          className="filtro-botao"
-          aria-label="Filtrar resultados"
-        >
-          <img
-              src={iconeFiltro}
-              alt="Ícone de filtro na pesquisa"
-              className="filtro-icon"
-          />
-        </button>
-      </div>
-      {showFilterMenu && (
-        <div className="filtro-menu">
-          <button className="filtro-opcao" onClick={handleOptionClick}>
-            Todas as atividades
-          </button>
-          <button className="filtro-opcao" onClick={handleOptionClick}>
-            Pendentes
-          </button>
-          <button className="filtro-opcao" onClick={handleOptionClick}>
-            Em andamento
-          </button>
-          <button className="filtro-opcao" onClick={handleOptionClick}>
-            Concluídas
-          </button>
-        </div>
+    <div className="pesquisa-wrapper" ref={ref}>
+      <input
+        type="text"
+        placeholder="Pesquisar tarefas…"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="pesquisa-input"
+      />
+
+      {/* Ícone de filtro */}
+      <button
+        type="button"
+        className="pesquisa-filter-btn"
+        onClick={() => setMenuOpen(o => !o)}
+      >
+        <img src={filterIcon} alt="Filtrar" />
+      </button>
+
+      {/* Menu de filtro */}
+      {menuOpen && (
+        <ul className="pesquisa-filter-menu">
+          {options.map(opt => (
+            <li
+              key={opt.value}
+              className={filterStatus === opt.value ? 'selected' : ''}
+              onClick={() => {
+                onFilterSelect(opt.value);
+                setMenuOpen(false);
+              }}
+            >
+              {opt.label}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
-};
-
-export default Pesquisa;
-
+}
